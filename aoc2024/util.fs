@@ -1,4 +1,4 @@
-module aoc2024.helper
+module aoc2024.util
 
 open System
 open System.Collections.Generic
@@ -16,9 +16,28 @@ let smapi x = x |> Seq.mapi (fun i x -> (i, x))
 
 let lw (a, b) = (lazy a, lazy b)
 let (?) is_true (a, b) = if is_true then a else b
+let ($) isTrue (a: Lazy<'a>, b: Lazy<'a>) = if isTrue then a.Force() else b.Force()
 
-let ($) is_true (a: Lazy<'a>, b: Lazy<'a>) =
-    if is_true then a.Force() else b.Force()
+module Seq =
+    let removeFirst predicate seq =
+        let idx = seq |> Seq.findIndex predicate
+        seq |> Seq.removeAt idx
+
+    let removeLast predicate seq =
+        let idx = seq |> Seq.findIndexBack predicate
+        seq |> Seq.removeAt idx
+
+    let removeAllItems predicate seq = seq |> Seq.where (not << predicate)
+
+module String =
+    let extractNum str =
+        Regex.Match(str, @"^-?[0-9]\d*(\.\d+)?$").Value |> int
+
+    let extractAllNums str =
+        Regex.Matches(str, @"-?[0-9]\d*(\.\d+)?")
+        |> Seq.cast<Match>
+        |> Seq.map (fun m -> m.Value |> int)
+
 
 let permString (data: string) =
     let swap (i: int) (j: int) (data: StringBuilder) =
@@ -73,6 +92,8 @@ type Point2D =
 
         member this.GetManhattanDistance(p: Point2D) = abs (this.x - p.x) + abs (this.y - p.y)
         override this.ToString() = $"[{this.x};{this.y}]"
+        static member (+)(a: Point2D, b: Point2D) = Point2D(a.x + b.x, a.y + b.y)
+        static member (-)(a: Point2D, b: Point2D) = Point2D(a.x - b.x, a.y - b.y)
     end
 
 type Point3D =
@@ -82,6 +103,12 @@ type Point3D =
         val z: int
         new(x: int, y: int, z: int) = { x = x; y = y; z = z }
         override this.ToString() = $"[{this.x};{this.y};{this.z}]"
+
+        static member (+)(a: Point3D, b: Point3D) =
+            Point3D(a.x + b.x, a.y + b.y, a.z + b.z)
+
+        static member (-)(a: Point3D, b: Point3D) =
+            Point3D(a.x - b.x, a.y - b.y, a.z - b.z)
     end
 
 type aocIO(year) =
@@ -206,5 +233,19 @@ module Grid =
         [ (-1, 0); (1, 0); (0, -1); (0, 1); (1, 1); (-1, 1); (1, -1); (-1, -1) ]
         |> Seq.map (fun (x, y) -> Point2D(point.x + x, point.y + y))
         |> Seq.toArray
+
+
+module Math =
+    let inline gcd a b =
+        let rec gcd a b =
+            if a <> LanguagePrimitives.GenericZero then
+                gcd (b % a) a
+            else
+                b
+
+        gcd a b
+
+    let inline lcm a b = (a * b) / (gcd a b)
+
 
 let aocIO = aocIO 2024

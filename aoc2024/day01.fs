@@ -1,6 +1,6 @@
 ﻿module aoc2024.day01
 
-open aoc2024.helper
+open aoc2024.util
 
 let solve () =
     let mutable l1 = List.empty
