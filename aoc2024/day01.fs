@@ -6,7 +6,7 @@ let solve () =
     let mutable l1 = List.empty
     let mutable l2 = List.empty
 
-    util.getInput ()
+    aocIO.getInput ()
     |> Seq.iter (fun x ->
         let spl = (x.Split "   ")
         l1 <- l1 @ [ int spl[0] ]

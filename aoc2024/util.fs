@@ -84,70 +84,47 @@ type Point3D =
         override this.ToString() = $"[{this.x};{this.y};{this.z}]"
     end
 
-module aocIO =
-    type Util() =
-        let httpClient = new HttpClient()
+type aocIO(year) =
+    let year = year
+    let httpClient = new HttpClient()
 
-        let sessionToken =
-            let secrets =
-                ConfigurationBuilder().AddUserSecrets(Assembly.GetExecutingAssembly()).Build()
+    let sessionToken =
+        let secrets =
+            ConfigurationBuilder().AddUserSecrets(Assembly.GetExecutingAssembly()).Build()
 
-            (secrets.AsEnumerable() |> Seq.find (fun s -> s.Key = "tokenAOC")).Value
+        (secrets.AsEnumerable() |> Seq.find (fun s -> s.Key = "tokenAOC")).Value
 
-        let getCallerModuleName () =
-            let st = StackTrace()
-            let mutable i = 0
+    let getCallerModuleName () =
+        let st = StackTrace()
 
-            while (st.GetFrame(i).GetMethod().ReflectedType.Name = "Util") do
-                i <- i + 1
+        let frameIdx =
+            ((+) 1 |> Seq.initInfinite)
+            |> Seq.skipWhile (fun i -> st.GetFrame(i).GetMethod().ReflectedType.Name = "aocIO")
+            |> Seq.head
 
-            st.GetFrame(i).GetMethod().ReflectedType.Name
+        st.GetFrame(frameIdx).GetMethod().ReflectedType.Name
 
-        let getPathToInputFile moduleName =
-            Path.Combine(Directory.GetParent(Environment.CurrentDirectory).Parent.Parent.FullName, $"{moduleName}.txt")
+    let getPathToInputFile moduleName =
+        Path.Combine(Directory.GetParent(Environment.CurrentDirectory).Parent.Parent.FullName, $"{moduleName}.txt")
 
-        member this.readInput() =
-            let moduleName = getCallerModuleName ()
-            File.ReadLines(getPathToInputFile moduleName)
+    member this.readInput() =
+        let moduleName = getCallerModuleName ()
+        File.ReadLines(getPathToInputFile moduleName)
 
-        member this.getInput(?overrideIfExists: bool) =
-            let overrideIfExists = defaultArg overrideIfExists false
+    member this.getInput(?overrideIfExists: bool) =
+        let overrideIfExists = defaultArg overrideIfExists false
 
-            let moduleName = getCallerModuleName ()
-            let pathToInputFile = getPathToInputFile moduleName
+        let moduleName = getCallerModuleName ()
+        let pathToInputFile = getPathToInputFile moduleName
 
-            let mutable shouldDownloadInput = true
+        let mutable shouldDownloadInput = true
 
-            if (not overrideIfExists) then
-                if (File.Exists pathToInputFile) then
-                    shouldDownloadInput <- false
+        if (not overrideIfExists) then
+            if (File.Exists pathToInputFile) then
+                shouldDownloadInput <- false
 
-            if shouldDownloadInput then
-                printfn "Downloading"
-
-                let urlDayPart =
-                    if moduleName.StartsWith "day0" then
-                        moduleName[4..]
-                    else
-                        moduleName[3..]
-
-                let url = $"https://adventofcode.com/2024/day/{urlDayPart}/input"
-                let request = new HttpRequestMessage(HttpMethod.Get, url)
-                request.Headers.Add("Cookie", $"session={sessionToken}")
-                let cts = new CancellationTokenSource()
-                let response = httpClient.Send request
-
-                if (not response.IsSuccessStatusCode) then
-                    failwith $"Could not get input, http error - {response.StatusCode}"
-
-                let content = response.Content.ReadAsStringAsync(cts.Token)
-                content |> Async.AwaitTask |> ignore
-                File.WriteAllText(pathToInputFile, content.Result)
-
-            this.readInput ()
-
-        member this.submitAnswer part answer =
-            let moduleName = getCallerModuleName ()
+        if shouldDownloadInput then
+            printfn "Downloading"
 
             let urlDayPart =
                 if moduleName.StartsWith "day0" then
@@ -155,34 +132,58 @@ module aocIO =
                 else
                     moduleName[3..]
 
-            let url = $"https://adventofcode.com/2024/day/{urlDayPart}/answer"
-            let request = new HttpRequestMessage(HttpMethod.Post, url)
+            let url = $"https://adventofcode.com/{year}/day/{urlDayPart}/input"
+            let request = new HttpRequestMessage(HttpMethod.Get, url)
             request.Headers.Add("Cookie", $"session={sessionToken}")
-
-            let payload = List<KeyValuePair<string, string>>()
-            payload.Add(KeyValuePair<string, string>("level", part.ToString()))
-            payload.Add(KeyValuePair<string, string>("answer", answer.ToString()))
-            request.Content <- new FormUrlEncodedContent(payload)
-
             let cts = new CancellationTokenSource()
             let response = httpClient.Send request
 
             if (not response.IsSuccessStatusCode) then
-                failwith $"Could submit answer, http error - {response.StatusCode}"
+                failwith $"Could not get input, http error - {response.StatusCode}"
 
             let content = response.Content.ReadAsStringAsync(cts.Token)
             content |> Async.AwaitTask |> ignore
+            File.WriteAllText(pathToInputFile, content.Result)
 
-            let html = content.Result
-            let pattern = "(?i)(?s)<article><p>(?<content>.*?)</p></article>"
-            let m = Regex.Match(html, pattern)
+        this.readInput ()
 
-            if m.Success then
-                let content = m.Groups.["content"].Value
-                printfn $"%A{content}"
-                content
+    member this.submitAnswer part answer =
+        let moduleName = getCallerModuleName ()
+
+        let urlDayPart =
+            if moduleName.StartsWith "day0" then
+                moduleName[4..]
             else
-                failwith "wtf"
+                moduleName[3..]
+
+        let url = $"https://adventofcode.com/{year}/day/{urlDayPart}/answer"
+        let request = new HttpRequestMessage(HttpMethod.Post, url)
+        request.Headers.Add("Cookie", $"session={sessionToken}")
+
+        let payload = List<KeyValuePair<string, string>>()
+        payload.Add(KeyValuePair<string, string>("level", part.ToString()))
+        payload.Add(KeyValuePair<string, string>("answer", answer.ToString()))
+        request.Content <- new FormUrlEncodedContent(payload)
+
+        let cts = new CancellationTokenSource()
+        let response = httpClient.Send request
+
+        if (not response.IsSuccessStatusCode) then
+            failwith $"Could submit answer, http error - {response.StatusCode}"
+
+        let content = response.Content.ReadAsStringAsync(cts.Token)
+        content |> Async.AwaitTask |> ignore
+
+        let html = content.Result
+        let pattern = "(?i)(?s)<article><p>(?<content>.*?)</p></article>"
+        let m = Regex.Match(html, pattern)
+
+        if m.Success then
+            let content = m.Groups.["content"].Value
+            printfn $"%A{content}"
+            content
+        else
+            failwith "wtf"
 
 
 module Grid =
@@ -206,4 +207,4 @@ module Grid =
         |> Seq.map (fun (x, y) -> Point2D(point.x + x, point.y + y))
         |> Seq.toArray
 
-let util = aocIO.Util()
+let aocIO = aocIO 2024
