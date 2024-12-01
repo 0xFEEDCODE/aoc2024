@@ -22,6 +22,10 @@ let solve () =
     let ans2 =
         l2 |> Seq.sumBy (fun x -> x * (l1 |> Seq.where (fun y -> x = y) |> Seq.length))
 
+    printfn $"%A{Grid.getNeighboursDiag (Point2D(5, 3))}"
+    printfn $"%A{ans1}"
+    printfn $"%A{ans2}"
+
     (*
     util.submitAnswer 1 ans1
     util.submitAnswer 2 ans2
