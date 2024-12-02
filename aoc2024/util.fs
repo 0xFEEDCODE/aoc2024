@@ -37,6 +37,7 @@ module String =
         Regex.Matches(str, @"-?[0-9]\d*(\.\d+)?")
         |> Seq.cast<Match>
         |> Seq.map (fun m -> m.Value |> int)
+        |> Seq.toArray
 
 
 let permString (data: string) =
