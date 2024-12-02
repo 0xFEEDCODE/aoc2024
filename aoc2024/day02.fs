@@ -3,25 +3,30 @@ open aoc2024.util
 
 let isSafe nums =
     let ascending = (nums |> Seq.head) < (nums |> Seq.last)
-    let mutable prev = None
     
-    nums 
-    |> Seq.takeWhile
-        (fun num ->
-            if prev.IsNone then
-                prev <- Some(num)
-                true
-            else
-                let curr = num
-                let diff = curr - prev.Value
-                prev <- Some(curr)
-                (abs diff > 0 && abs diff < 4 && ((diff > 0) = ascending)))
+    nums
+    |> Seq.scan
+        (fun (prev: Option<int>) (curr: int) ->
+            let diffOption = if prev.IsNone then None else Some(curr-prev.Value)
+            
+            match diffOption with
+            | Some(diff) when abs diff > 0 && abs diff < 4 && ((diff > 0) = ascending) ->
+                Some(curr)
+            | None when prev.IsNone ->
+                Some(curr)
+            | _ ->
+                None
+        ) None
+    |> Seq.skip 1
+    |> Seq.takeWhile(_.IsSome)
     |> Seq.length
     |> (=) (nums |> Seq.length)
+
     
 let solve() =
-    
     let inp = aocIO.getInput()
+    
+    
     let ans1 =
         inp
         |> Seq.map String.extractAllNums
