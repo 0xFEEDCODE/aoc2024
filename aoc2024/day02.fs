@@ -2,16 +2,22 @@
 open aoc2024.util
 
 let isSafe nums =
-    let nums = nums |> Seq.toArray
-    let ascending = nums[1] > nums[0]
+    let ascending = (nums |> Seq.head) < (nums |> Seq.last)
+    let mutable prev = None
     
-    seq {1..(nums.Length-1)}
-    |> Seq.forall
-        (fun i ->
-            let prev = nums[i-1]
-            let curr = nums[i]
-            let diff = curr - prev
-            (abs diff > 0 && abs diff < 4 && ((diff > 0) = ascending)))
+    nums 
+    |> Seq.takeWhile
+        (fun num ->
+            if prev.IsNone then
+                prev <- Some(num)
+                true
+            else
+                let curr = num
+                let diff = curr - prev.Value
+                prev <- Some(curr)
+                (abs diff > 0 && abs diff < 4 && ((diff > 0) = ascending)))
+    |> Seq.length
+    |> (=) (nums |> Seq.length)
     
 let solve() =
     
