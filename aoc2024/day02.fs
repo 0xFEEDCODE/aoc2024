@@ -10,7 +10,9 @@ let isSafe nums =
             let diffOption = if prev.IsNone then None else Some(curr-prev.Value)
             
             match diffOption with
-            | Some(diff) when abs diff > 0 && abs diff < 4 && ((diff > 0) = ascending) ->
+            | Some(diff) when abs diff > 0 &&
+                              abs diff < 4 &&
+                              diff > 0 = ascending ->
                 Some(curr)
             | None when prev.IsNone ->
                 Some(curr)
