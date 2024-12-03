@@ -37,6 +37,7 @@ module String =
         Regex.Matches(str, @"-?[0-9]\d*(\.\d+)?")
         |> Seq.cast<Match>
         |> Seq.map (fun m -> m.Value |> int)
+        |> Seq.toArray
 
 
 let permString (data: string) =
@@ -55,7 +56,7 @@ let permString (data: string) =
             perm (k - 1) sb_copy
 
             for i = 0 to (k - 1) do
-                swap ((k % 2 = 0)?(i, 0)) (k - 1) dsb
+                swap (k % 2 = 0)?(i, 0) (k - 1) dsb
 
                 perm (k - 1) dsb
 
@@ -163,6 +164,8 @@ type aocIO(year) =
             let request = new HttpRequestMessage(HttpMethod.Get, url)
             request.Headers.Add("Cookie", $"session={sessionToken}")
             let cts = new CancellationTokenSource()
+
+            printfn $"Getting input from: %A{url}"
             let response = httpClient.Send request
 
             if (not response.IsSuccessStatusCode) then

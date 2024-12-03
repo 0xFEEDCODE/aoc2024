@@ -9,10 +9,12 @@
     <ItemGroup>
         <Compile Include="util.fs"/>
         <Compile Include="day01.fs"/>
+        <Compile Include="day02.fs"/>
+        <Compile Include="day03.fs"/>
+        <Compile Include="day33.fs" />
         <Compile Include="Program.fs"/>
         <Content Include="day01.txt"/>
         <Content Include="day02.txt"/>
-        <Content Include="day03.txt"/>
         <Content Include="day04.txt"/>
         <Content Include="day05.txt"/>
         <Content Include="day06.txt"/>
@@ -34,6 +36,7 @@
         <Content Include="day22.txt"/>
         <Content Include="day23.txt"/>
         <Content Include="day24.txt"/>
+        <Content Include="day02.txt"/>
     </ItemGroup>
 
     <ItemGroup>
