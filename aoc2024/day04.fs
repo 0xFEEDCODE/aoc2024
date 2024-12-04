@@ -1,8 +1,5 @@
 ﻿module aoc2024.day04
-
-open System.Collections.Generic
 open aoc2024.util
-
 
 let solve() =
     let io = aocIO
@@ -15,14 +12,14 @@ let solve() =
     let directionOffsets = [ (0, 1); (1, 0); (1, 1); (-1, 1); (-1, 0); (0, -1); (-1, -1); (1, -1) ]
     let xmas = "XMAS"
         
-    let isXmas x y =
+    let getNXmasOccurrences x y =
         (directionOffsets |> Seq.where(fun (offY, offX) ->
                     {0..(xmas.Length-1)} |> Seq.forall(fun i ->
                         let nX, nY = ((x + (offX*i)), (y + (offY*i)))
                         ((nX >= 0 && nX < nCols && nY >= 0 && nY < nRows) && gr[nX][nY] = xmas[i]))
             ) |> Seq.length)
         
-    let ans1 = seq {0..(nRows-1)} |> Seq.sumBy(fun y -> seq {0..(nCols-1)} |> Seq.sumBy(fun x -> isXmas x y))
+    let ans1 = seq {0..(nRows-1)} |> Seq.sumBy(fun y -> seq {0..(nCols-1)} |> Seq.sumBy(fun x -> getNXmasOccurrences x y))
         
     printfn $"%A{ans1}"
     
