@@ -26,28 +26,15 @@ let solve() =
         
     printfn $"%A{ans1}"
     
-    let mutable ans2 = 0
+    let isXmas2 x y =
+        gr[x][y] = 'A' &&
+        (x-1 >= 0 && x+1 < nCols && y-1 >= 0 && y+1 < nRows) &&
+        ((gr[x-1][y-1] = 'M' && gr[x-1][y+1] = 'M' && gr[x+1][y-1] = 'S' && gr[x+1][y+1] = 'S') || 
+        (gr[x-1][y-1] = 'S' && gr[x-1][y+1] = 'S' && gr[x+1][y-1] = 'M' && gr[x+1][y+1] = 'M') ||
+        (gr[x-1][y-1] = 'M' && gr[x-1][y+1] = 'S' && gr[x+1][y-1] = 'M' && gr[x+1][y+1] = 'S') ||
+        (gr[x-1][y-1] = 'S' && gr[x-1][y+1] = 'M' && gr[x+1][y-1] = 'S' && gr[x+1][y+1] = 'M')) 
+            
+    let ans2 = seq {0..(nRows-1)} |> Seq.sumBy(fun y -> seq {0..(nCols-1)} |> Seq.where(fun x -> isXmas2 x y) |> Seq.length)
     
-    let mutable markedPos2 = List<string>()
-    
-    for y in 0..(nRows-1) do
-        for x in 0..(nCols-1) do
-            if (gr[x][y] = 'A') then
-                if(x-1 >= 0 && x+1 < nCols && y-1 >= 0 && y+1 < nRows) then
-                    if(gr[x-1][y-1] = 'M' && gr[x-1][y+1] = 'M' &&
-                      gr[x+1][y-1] = 'S' && gr[x+1][y+1] = 'S') then
-                        &ans2 += 1
-                    else if(gr[x-1][y-1] = 'S' && gr[x-1][y+1] = 'S' &&
-                      gr[x+1][y-1] = 'M' && gr[x+1][y+1] = 'M') then
-                        &ans2 += 1
-                    else if(gr[x-1][y-1] = 'M' && gr[x-1][y+1] = 'S' &&
-                      gr[x+1][y-1] = 'M' && gr[x+1][y+1] = 'S') then
-                        &ans2 += 1
-                    else if(gr[x-1][y-1] = 'S' && gr[x-1][y+1] = 'M' &&
-                      gr[x+1][y-1] = 'S' && gr[x+1][y+1] = 'M') then
-                        &ans2 += 1
-    
-    //io.submitAnswer 1 ans1
-    //io.submitAnswer 2 ans2
     printfn $"%A{ans2}"
     0
