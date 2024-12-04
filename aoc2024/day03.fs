@@ -5,11 +5,11 @@ open System
 
 let processMul i (data: string) =
         let mutable i = i
-        i <- i+4
+        &i += 4
         let mutable content = ""
         while(data[i] <> ')') do
             content <- content + (data[i] |> string)
-            i <- i + 1
+            &i += 1
         if content.Contains ',' then
             let spl = content.Split ','
             // check if spl[0] and spl[1] can be parsed to int
@@ -40,10 +40,12 @@ let solve() =
         
         if (inp[i..i+6] = "don't()") then
             isDo <- false
-        i <- i + 1
+            
+        &i += 1
             
         
     printfn $"%A{s}"
-    aocIO.submitAnswer 2 s
+    
+    //aocIO.submitAnswer 2 s
         
     0
