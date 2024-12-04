@@ -33,7 +33,6 @@ let solve() =
     
     let mutable markedPos = List<string>()
     
-    (*
     let mutable ans1 = 0
     
     for y in 0..(nRows-1) do
@@ -62,7 +61,6 @@ let solve() =
                             found <- true
         
     printfn $"%A{ans1}"
-    *)
     
     let mutable ans2 = 0
     
