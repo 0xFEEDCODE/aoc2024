@@ -219,6 +219,20 @@ type aocIO(year) =
 
 
 module Grid =
+    let createGridFromData(data: string seq) =
+        let grid =
+            Array.zeroCreate<Array> (data |> Seq.length)
+            |> Seq.map (fun _ -> Array.zeroCreate<'a> (data |> Seq.head |> Seq.length))
+            |> Seq.toArray
+        let mutable y = 0;
+        for line in data do
+            let mutable x = 0;
+            for ch in line do
+                grid[y][x] <- ch
+                &x += 1
+            &y += 1
+        grid
+        
     let createGrid<'a> nRows nCols =
         Array.zeroCreate<Array> nRows
         |> Seq.map (fun _ -> Array.zeroCreate<'a> nCols)
