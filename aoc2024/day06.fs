@@ -70,6 +70,8 @@ let solve() =
         let nRows = inp |> Seq.length
         let nCols = inp |> Seq.head |> Seq.length
         
+        let visited = Dictionary<Point2D * Point2D, Dir>()
+        
         let mutable detectedL = false
         while(cp.x >= 0 && cp.x < nCols && cp.y >= 0 && cp.y < nRows && not detectedL) do
             let np =
@@ -83,11 +85,10 @@ let solve() =
                 cp <- np
             else
                 if (gr[np.y][np.x] = '#') then
-                    let dirValue = cd.ToString()[0]
-                    if(gr[cp.y][cp.x] = dirValue) then
+                    if(visited.ContainsKey (cp,np) && visited[(cp,np)] = cd) then
                         detectedL <- true
                     else
-                        gr[cp.y][cp.x] <- dirValue
+                        visited[(cp,np)] <- cd
                     cd <- ndir cd
                     
                 else
@@ -104,7 +105,7 @@ let solve() =
                 if not (points.Contains(p)) && p <> sp then
                     &loops += if (alg cp p) then 1 else 0
                 gr[y][x] <- '.'
-            printfn $"%A{(x,y, loops)}"
+            //printfn $"%A{(x,y, loops)}"
         
     //io.submitAnswer 2 loops
     
