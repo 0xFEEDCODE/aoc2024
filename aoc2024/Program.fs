@@ -1,4 +1,6 @@
-﻿open System.Diagnostics
+﻿open System.Collections
+open System.Diagnostics
+open System.Linq
 open aoc2024
 
 let sw = Stopwatch()
@@ -14,5 +16,8 @@ day06.solve()
 *)
 sw.Stop()
 day07.solve()
+Array.exists
+
+// Convert stopwatch to HH:MM:SS:MS format
 
 printfn $"Time taken - %A{sw.Elapsed}"
