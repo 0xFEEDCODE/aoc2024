@@ -29,7 +29,7 @@ module Seq =
         let idx = seq |> Seq.findIndexBack predicate
         seq |> Seq.removeAt idx
 
-    let removeAllItems predicate seq = seq |> Seq.where (not << predicate)
+    let removeAllItemsThat predicate seq = seq |> Seq.where (not << predicate)
 
 module String =
     let extractNum str =
@@ -40,7 +40,12 @@ module String =
         |> Seq.cast<Match>
         |> Seq.map (fun m -> m.Value |> int)
         |> Seq.toArray
-
+        
+    let extractAllNumsU str =
+        Regex.Matches(str, @"-?[0-9]\d*(\.\d+)?")
+        |> Seq.cast<Match>
+        |> Seq.map (fun m -> m.Value |> uint64)
+        |> Seq.toArray
 
 let permString (data: string) =
     let swap (i: int) (j: int) (data: StringBuilder) =
@@ -86,14 +91,14 @@ let perm (data: 'a seq) =
 
     perm (data |> Seq.length) (data |> Seq.toArray)
     acc |> List.toSeq
-
+    
 type Point2D =
     struct
         val x: int
         val y: int
         new(x: int, y: int) = { x = x; y = y }
 
-        member this.GetManhattanDistance(p: Point2D) = abs (this.x - p.x) + abs (this.y - p.y)
+        member this.GetManhattanDistance(other: Point2D) = abs (this.x - other.x) + abs (this.y - other.y)
         override this.ToString() = $"[{this.x};{this.y}]"
         static member (+)(a: Point2D, b: Point2D) = Point2D(a.x + b.x, a.y + b.y)
         static member (-)(a: Point2D, b: Point2D) = Point2D(a.x - b.x, a.y - b.y)
@@ -112,6 +117,70 @@ type Point3D =
 
         static member (-)(a: Point3D, b: Point3D) =
             Point3D(a.x - b.x, a.y - b.y, a.z - b.z)
+    end
+    
+type Line =
+    struct
+        val s: Point2D
+        val e: Point2D
+        
+        new(s: Point2D, e: Point2D) = { s = s; e = e; }
+        override this.ToString() = $"Start: {this.s}; End: {this.e}"
+        
+        member private this.IntersectsAtAxis startA endA startB endB =
+            let start1 = (min startA startB)
+            let start2 = (max startA startB)
+            let end1 = (min endA endB)
+            let end2 = (max endA endB)
+            
+            start2 <= end1 && start1 <= start2 && end1 <= end2
+            
+        member this.Intersects(other: Line) =
+            let ax1, ay1, ax2, ay2 = (this.s.x, this.s.y, this.e.x, this.e.y)
+            let bx1, by1, bx2, by2 = (other.s.x, other.s.y, other.e.x, other.e.y)
+            
+            if (ax1 = ax2 && bx1 = bx2 && ax1 = bx1) then
+                this.IntersectsAtAxis ay1 ay2 by1 by2
+            elif (ay1 = ay2 && by1 = by2 && ay1 = by1) then
+                this.IntersectsAtAxis ax1 ax2 bx1 bx2
+            else
+                false
+                
+        member this.GetIntersectingLine(other: Line) =
+            let ax1, ay1, ax2, ay2 = (this.s.x, this.s.y, this.e.x, this.e.y)
+            let bx1, by1, bx2, by2 = (other.s.x, other.s.y, other.e.x, other.e.y)
+            
+            let getIntersect startA endA startB endB =
+                let start2 = (max startA startB)
+                let end1 = (min endA endB)
+                (start2, end1)
+                
+            if (ax1 = ax2 && bx1 = bx2 && ax1 = bx1 && this.IntersectsAtAxis ay1 ay2 by1 by2) then
+                let isectStart, isectEnd = getIntersect ay1 ay2 by1 by2
+                Line(Point2D(ax1, isectStart), Point2D(ax2, isectEnd)) |> Some
+            elif (ay1 = ay2 && by1 = by2 && ay1 = by1 && this.IntersectsAtAxis ax1 ax2 bx1 bx2) then
+                let isectStart, isectEnd = getIntersect ax1 ax2 bx1 bx2
+                Line(Point2D(isectStart, ay1), Point2D(isectEnd, ay2)) |> Some
+            else
+                None
+                
+        member this.GetIntersectingLength(other: Line) =
+            let ax1, ay1, ax2, ay2 = (this.s.x, this.s.y, this.e.x, this.e.y)
+            let bx1, by1, bx2, by2 = (other.s.x, other.s.y, other.e.x, other.e.y)
+            
+            let getIntersect startA endA startB endB =
+                let start2 = (max startA startB)
+                let end1 = (min endA endB)
+                (start2, end1)
+                
+            if (ax1 = ax2 && bx1 = bx2 && ax1 = bx1 && this.IntersectsAtAxis ay1 ay2 by1 by2) then
+                let isectStart, isectEnd = getIntersect ay1 ay2 by1 by2
+                1 + (isectEnd - isectStart) |> Some
+            elif (ay1 = ay2 && by1 = by2 && ay1 = by1 && this.IntersectsAtAxis ax1 ax2 bx1 bx2) then
+                let isectStart, isectEnd = getIntersect ax1 ax2 bx1 bx2
+                1 + (isectEnd - isectStart) |> Some
+            else
+                None
     end
 
 type aocIO(year) =
@@ -219,13 +288,25 @@ type aocIO(year) =
 
 
 module Grid =
-    let createGridFromData(data: string seq) =
+    let getNRowsAndNCols grid =
+        (grid |> Seq.length, grid |> Seq.head |> Seq.length)
+        
+    let iter action (source : array<'a> array) =
+        let nRows, nCols = getNRowsAndNCols source
+        for y in 0..nRows-1 do
+            for x in 0..nCols-1 do
+                action x y
+                
+    let countBy action (source : array<'a> array) =
+        source |> Seq.collect id |> Seq.countBy action
+    
+    let initializeFromStringSeq (source: string seq) =
         let grid =
-            Array.zeroCreate<Array> (data |> Seq.length)
-            |> Seq.map (fun _ -> Array.zeroCreate<'a> (data |> Seq.head |> Seq.length))
+            Array.zeroCreate<Array> (source |> Seq.length)
+            |> Seq.map (fun _ -> Array.zeroCreate<'a> (source |> Seq.head |> Seq.length))
             |> Seq.toArray
         let mutable y = 0;
-        for line in data do
+        for line in source do
             let mutable x = 0;
             for ch in line do
                 grid[y][x] <- ch
@@ -243,12 +324,17 @@ module Grid =
         |> Seq.map (fun _ -> Array.create<'a> nCols initValue)
         |> Seq.toArray
 
-    let getNeighbours (point: Point2D) =
+    let getAdjacentNeighbours (point: Point2D) =
         [ (-1, 0); (1, 0); (0, -1); (0, 1) ]
         |> Seq.map (fun (x, y) -> Point2D(point.x + x, point.y + y))
         |> Seq.toArray
 
-    let getNeighboursDiag (point: Point2D) =
+    let getDiagonalNeighbours (point: Point2D) =
+        [  (1, 1); (-1, 1); (1, -1); (-1, -1) ]
+        |> Seq.map (fun (x, y) -> Point2D(point.x + x, point.y + y))
+        |> Seq.toArray
+        
+    let getAllNeighbours (point: Point2D) =
         [ (-1, 0); (1, 0); (0, -1); (0, 1); (1, 1); (-1, 1); (1, -1); (-1, -1) ]
         |> Seq.map (fun (x, y) -> Point2D(point.x + x, point.y + y))
         |> Seq.toArray

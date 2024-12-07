@@ -23,7 +23,7 @@ let solve() =
     
     let points = List<Point2D>()
     
-    let gr = Grid.createGridFromData inp
+    let gr = Grid.initializeFromStringSeq inp
     
     let mutable cd : Dir = U
     let mutable cp : Point2D = Point2D(0,0)
@@ -97,16 +97,17 @@ let solve() =
     
     let mutable loops = 0
     let sp = cp
-    for y in 0..(nRows-1) do
-        for x in 0..(nCols-1) do
+    
+    gr |>
+    Grid.iter (fun x y -> (
             let p = Point2D(x,y)
             if(gr[y][x] = '.') then
                 gr[y][x] <- '#'
                 if not (points.Contains(p)) && p <> sp then
                     &loops += if (alg cp p) then 1 else 0
                 gr[y][x] <- '.'
-            //printfn $"%A{(x,y, loops)}"
-        
+        ))
+
     //io.submitAnswer 2 loops
     
     printfn $"%A{loops}"
