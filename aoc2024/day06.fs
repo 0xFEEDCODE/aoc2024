@@ -3,6 +3,7 @@
 open System.Collections.Generic
 open System.Threading.Channels
 open aoc2024.util
+open aoc2024.util.Seq
 
 type Dir =
     | U

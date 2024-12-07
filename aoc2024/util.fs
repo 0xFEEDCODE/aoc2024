@@ -18,7 +18,6 @@ let lw (a, b) = (lazy a, lazy b)
 let (?) is_true (a, b) = if is_true then a else b
 let ($) isTrue (a: Lazy<'a>, b: Lazy<'a>) = if isTrue then a.Force() else b.Force()
 let inline (+=) (x : byref<_>) y = x <- x + y
-let inline (++) (x: byref<_>) () = x <- x + LanguagePrimitives.GenericOne
 
 module Seq =
     let removeFirst predicate seq =
@@ -30,6 +29,17 @@ module Seq =
         seq |> Seq.removeAt idx
 
     let removeAllItemsThat predicate seq = seq |> Seq.where (not << predicate)
+    
+    let cartesianProduct sequences =
+        let (|SeqEmpty|SeqCons|) xs = 
+          if Seq.isEmpty xs then SeqEmpty
+          else SeqCons(xs |> Seq.head, xs |> Seq.skip 1)
+
+        let rec loop acc = function
+            | SeqEmpty -> acc
+            | SeqCons(h, t) -> loop (h |> Seq.collect (fun x -> Seq.map (fun y -> seq {yield x; yield! y}) acc)) t
+            
+        loop (seq{ Seq.empty }) sequences
 
 module String =
     let extractNum str =
