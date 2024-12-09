@@ -18,6 +18,7 @@ let lw (a, b) = (lazy a, lazy b)
 let (?) is_true (a, b) = if is_true then a else b
 let ($) isTrue (a: Lazy<'a>, b: Lazy<'a>) = if isTrue then a.Force() else b.Force()
 let inline (+=) (x : byref<_>) y = x <- x + y
+let inline (-=) (x : byref<_>) y = x <- x - y
 
 module Seq =
     let removeFirst predicate seq =
@@ -40,6 +41,29 @@ module Seq =
             | SeqCons(h, t) -> loop (h |> Seq.collect (fun x -> Seq.map (fun y -> seq {yield x; yield! y}) acc)) t
             
         loop (seq{ Seq.empty }) sequences
+        
+    let cartesianProductRepeat nRepeat sequences =
+        cartesianProduct (sequences |> Seq.replicate nRepeat)
+        
+        
+        
+module List =
+    let rec cartesianWithRepeat lists =
+        //seq { for x in xs do for y in ys -> x, y  }
+        let rec cp acc = function
+            | [] -> acc
+            | h::t -> cp (h |> List.collect (fun x -> List.map (fun y -> x::y) acc)) t
+        cp lists
+        
+        
+    let cartesianProduct lists =
+        let rec cp acc = function
+            | [] -> acc
+            | h::t -> cp (h |> List.collect (fun x -> List.map (fun y -> x::y) acc)) t
+        cp [[]] lists
+        
+    let cartesianProductRepeat nRepeat sequences =
+        cartesianProduct (sequences |> List.replicate nRepeat)
 
 module String =
     let extractNum str =
@@ -51,34 +75,38 @@ module String =
         |> Seq.map (fun m -> m.Value |> int)
         |> Seq.toArray
         
-    let extractAllNumsU str =
+    let extractAllNumsBig str =
         Regex.Matches(str, @"-?[0-9]\d*(\.\d+)?")
         |> Seq.cast<Match>
-        |> Seq.map (fun m -> m.Value |> uint64)
+        |> Seq.map _.Value
+        |> Seq.map bigint.Parse
         |> Seq.toArray
+        
+    let permute (data: string) =
+        let swap (i: int) (j: int) (data: StringBuilder) =
+            let temp = data[i]
+            data[i] <- data[j]
+            data[j] <- temp
 
-let permString (data: string) =
-    let swap (i: int) (j: int) (data: StringBuilder) =
-        let temp = data[i]
-        data[i] <- data[j]
-        data[j] <- temp
+        let mutable acc = List.empty
 
-    let mutable acc = List.empty
+        let rec perm k (sb: StringBuilder) =
+            if k = 1 then
+                let str = sb.ToString()
+                if not (acc |> List.contains str) then
+                    acc <- str :: acc
+            else
+                let sb_copy = StringBuilder().Append(sb)
+                perm (k - 1) sb_copy
 
-    let rec perm k (dsb: StringBuilder) =
-        if k = 1 then
-            acc <- dsb.ToString() :: acc
-        else
-            let sb_copy = StringBuilder().Append(dsb)
-            perm (k - 1) sb_copy
+                for i = 0 to (k - 1) do
+                    swap (k % 2 = 0)?(i, 0) (k - 1) sb
 
-            for i = 0 to (k - 1) do
-                swap (k % 2 = 0)?(i, 0) (k - 1) dsb
+                    perm (k - 1) sb
 
-                perm (k - 1) dsb
+        perm data.Length (StringBuilder(data))
+        acc
 
-    perm data.Length (StringBuilder(data))
-    acc
 
 let perm (data: 'a seq) =
     let swap (i: int) (j: int) (data: 'a array) =
@@ -95,7 +123,7 @@ let perm (data: 'a seq) =
             perm (k - 1) (data |> Seq.toArray)
 
             for i = 0 to (k - 1) do
-                swap ((k % 2 = 0)?(i, 0)) (k - 1) data
+                swap (k % 2 = 0)?(i, 0) (k - 1) data
 
                 perm (k - 1) data
 
