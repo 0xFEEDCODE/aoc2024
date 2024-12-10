@@ -2,16 +2,16 @@
 
 open System
 open System.Collections.Generic
+open System.Text
 open Microsoft.FSharp.Core
 open aoc2024.util
 
 let solve()=
     let io = aocIO
-    let mutable inp = io.getInput(true) |> Seq.head
+    let mutable inp = io.getInput() |> Seq.head
     inp <- inp + "0"
     
     let idMap = Dictionary<char, int>()
-    
     let w =
         inp
         |> Seq.pairwise
@@ -81,33 +81,27 @@ let solve()=
     printfn $"%A{a1}"
     *)
     
+    let mutable s = StringBuilder(toStr w)
     
-        
-        
-    let mutable s = toStr w
-    
-    let mutable l = List<char>()
-    s |> Seq.iter(fun x -> l.Add x)
-    
-    let len = (s |> Seq.length)-1
+    let len = (s.Length)-1
     let mutable i = len
     while (i >= 0) do
-        if(l[i] <> '.') then
+        if(s[i] <> '.') then
             
-            let ch = l[i]
+            let ch = s[i]
             let mutable len = 0
-            while(i >= 0 && l[i] = ch) do
+            while(i >= 0 && s[i] = ch) do
                 len <- len + 1
-                i <- i-1
+                i <- (i-1)
                 
             let mutable j = -1
             let mutable found = false
             while (not found && j < i) do
                 j <- j+1
-                if(i <> j && l[j] = '.') then
+                if(i <> j && s[j] = '.') then
                     let mutable isEnough = len
                     let mutable k = j
-                    while(isEnough >= 0 && l[k] = '.') do
+                    while(isEnough >= 0 && s[k] = '.') do
                         k <- k+1
                         isEnough <- isEnough - 1
                     if (isEnough <= 0) then
@@ -115,15 +109,16 @@ let solve()=
                     
             if found then
                 for xl in 0..len-1 do
-                    l[j+xl] <- ch
-                    l[i+1+xl] <- '.'
+                    s[j+xl] <- ch
+                    s[i+1+xl] <- '.'
             
         else
-            i <- i - 1
+            i <- (i - 1)
     
-    let s = l |> Seq.fold(fun acc x -> acc+x.ToString() ) ""
+    let s = s.ToString() |> Seq.fold(fun acc x -> acc+x.ToString() ) ""
     
     let mutable a1 = bigint 0
+    
     for i in 0..(s|>Seq.length)-1 do
         if(s[i] <> '.') then
             let id = idMap[s[i]]
@@ -131,7 +126,7 @@ let solve()=
         ()
             
     
-    printfn $"%A{s}"
+    //printfn $"%A{s}"
     printfn $"%A{a1}"
         
     
