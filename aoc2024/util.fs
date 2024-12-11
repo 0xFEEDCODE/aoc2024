@@ -90,6 +90,13 @@ module String =
         |> Seq.map (fun m -> m.Value |> int)
         |> Seq.toArray
         
+    let extractAllNumsUint64 str =
+        Regex.Matches(str, @"-?[0-9]\d*(\.\d+)?")
+        |> Seq.cast<Match>
+        |> Seq.map _.Value
+        |> Seq.map (UInt64.Parse)
+        |> Seq.toArray
+        
     let extractAllNumsBig str =
         Regex.Matches(str, @"-?[0-9]\d*(\.\d+)?")
         |> Seq.cast<Match>
