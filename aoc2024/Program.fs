@@ -1,9 +1,5 @@
-﻿open System.Collections
-open System.Diagnostics
-open System.Linq
+﻿open System.Diagnostics
 open aoc2024
-open aoc2024.util.Seq
-open util
 
 let sw = Stopwatch()
 
@@ -19,8 +15,9 @@ day07.solve()
 day08.solve()
 day10.solve()
 day11.solve()
-*)
 day12.solve()
+*)
+day11.solve ()
 
 sw.Stop()
 printfn $"Time taken - %A{sw.Elapsed}"
