@@ -100,5 +100,5 @@ let solve () =
 
         loop n targetR targetR 0UL
 
-    let res = stones |> Seq.fold (fun acc x -> acc + (nr x 2500)) 0UL
+    let res = stones |> Seq.fold (fun acc x -> acc + (nr x 75)) 0UL
     printfn $"%A{res}"
