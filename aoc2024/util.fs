@@ -34,6 +34,7 @@ type m<'T> (v : 'T) =
     *)
 
 
+
 module Seq =
     let str = String "st"
 
@@ -176,6 +177,7 @@ type Point2D =
     struct
         val x: int
         val y: int
+
         new(x: int, y: int) = { x = x; y = y }
 
         member this.GetManhattanDistance(other: Point2D) =

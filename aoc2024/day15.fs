@@ -1,38 +1,42 @@
 ﻿module aoc2024.day15
 
 open System.Text
-open System.Threading
 open Microsoft.FSharp.Core
 open aoc2024.util
 
-(*
-
-type P2D(x, y) as self =
+type Point(x, y) =
     let mutable x = x
     let mutable y = y
+    let mutable id = 0
 
     member this.X
         with get () = x
-        and set (v) = x <- v
+        and set v = x <- v
 
     member this.Y
         with get () = y
-        and set (v) = y <- v
+        and set v = y <- v
 
-    member this.add(b: P2D) =
+    member this.Id
+        with get () = id
+        and set v = id <- v
+
+    member this.Add(b: Point) =
         x <- this.X + b.X
         y <- this.Y + b.Y
 
-    static member (+)(a: P2D, b: P2D) = P2D(a.X + b.X, a.Y + b.Y)
+    static member (+)(a: Point, b: Point) =
+        let np = Point(a.X + b.X, a.Y + b.Y)
+        np.Id <- a.Id
+        np
+
+    member this.boxRightSide = this + Point(1, 0)
 
     override this.Equals(obj) =
         match obj with
-        | :? P2D as p -> p.X = this.X && p.Y = this.Y
+        | :? Point as p -> p.X = this.X && p.Y = this.Y
         | _ -> false
-
-
-    override this.ToString() = $"({this.X}, {this.Y})"
-    
+        
 let solvept1 () =
     let io = aocIO
     let inp = io.getInput ()
@@ -48,7 +52,7 @@ let solvept1 () =
 
     let mutable boundaries = List.empty
     let mutable boxes = List.empty
-    let mutable robot = P2D(0, 0)
+    let mutable robot = Point(0, 0)
 
 
     let h = mapH
@@ -57,7 +61,7 @@ let solvept1 () =
     let pr () =
         for y in 0..h do
             for x in 0..w do
-                let p = P2D(x, y)
+                let p = Point(x, y)
 
                 if boundaries |> List.contains p then printf "#"
                 else if boxes |> List.contains p then printf "@"
@@ -73,13 +77,13 @@ let solvept1 () =
 
         for ch in line do
             if ch = '#' then
-                boundaries <- boundaries @ [ P2D(x, y) ]
+                boundaries <- boundaries @ [ Point(x, y) ]
 
             if ch = 'O' then
-                boxes <- boxes @ [ P2D(x, y) ]
+                boxes <- boxes @ [ Point(x, y) ]
 
             if ch = '@' then
-                robot <- P2D(x, y)
+                robot <- Point(x, y)
 
             x <- x + 1
 
@@ -91,10 +95,10 @@ let solvept1 () =
 
     let dir =
         Map.empty
-            .Add('^', P2D(0, -1))
-            .Add('v', P2D(0, 1))
-            .Add('<', P2D(-1, 0))
-            .Add('>', P2D(1, 0))
+            .Add('^', Point(0, -1))
+            .Add('v', Point(0, 1))
+            .Add('<', Point(-1, 0))
+            .Add('>', Point(1, 0))
 
     let rec canMove p d =
         if (boundaries |> List.contains p) then false
@@ -105,21 +109,19 @@ let solvept1 () =
         let newRobotPos = robot + dir[move]
 
         if canMove newRobotPos dir[move] then
-            robot.add (dir[move])
+            robot.Add (dir[move])
 
             let mutable sp =
                 boxes
                 |> List.where (fun p -> p = newRobotPos || boxes |> List.where (fun y -> p = y) |> List.length > 1)
 
             while (sp.Length > 0) do
-                sp.Head.add dir[move]
+                sp.Head.Add dir[move]
 
                 sp <-
                     boxes
                     |> List.where (fun p -> p = newRobotPos || boxes |> List.where (fun y -> p = y) |> List.length > 1)
 
-
-    //pr ()
 
 
     let mutable a1 = bigint.Zero
@@ -130,49 +132,9 @@ let solvept1 () =
 
     printfn $"%A{a1}"
 
-
     io.submitAnswer 1 a1
     //io.submitAnswer 2 a2
     0
-    *)
-
-
-type P2D(x, y) as self =
-    let mutable x = x
-    let mutable y = y
-    let mutable id = 0
-
-    member this.X
-        with get () = x
-        and set (v) = x <- v
-
-    member this.Y
-        with get () = y
-        and set (v) = y <- v
-
-    member this.Id
-        with get () = id
-        and set (v) = id <- v
-
-    member this.add(b: P2D) =
-        x <- this.X + b.X
-        y <- this.Y + b.Y
-
-
-    static member (+)(a: P2D, b: P2D) =
-        let np = P2D(a.X + b.X, a.Y + b.Y)
-        np.Id <- a.Id
-        np
-
-    member this.boxRightSide = this + P2D(1, 0)
-
-    override this.Equals(obj) =
-        match obj with
-        | :? P2D as p -> p.X = this.X && p.Y = this.Y
-        | _ -> false
-
-
-    override this.ToString() = $"({this.X}, {this.Y})"
 
 let solve () =
     let io = aocIO
@@ -189,7 +151,7 @@ let solve () =
 
     let mutable boundaries = List.empty
     let mutable boxes = List.empty
-    let mutable robot = P2D(0, 0)
+    let mutable robot = Point(0, 0)
 
     let mutable nmap = List.empty
 
@@ -212,23 +174,21 @@ let solve () =
 
     let mutable id = 1
 
-    //nmap <- map |> Seq.toList
-
     for line in nmap do
         let mutable x = 0
 
         for ch in line do
             if ch = '#' then
-                boundaries <- boundaries @ [ P2D(x, y) ]
+                boundaries <- boundaries @ [ Point(x, y) ]
 
             if ch = '[' then
-                let b = P2D(x, y)
+                let b = Point(x, y)
                 b.Id <- id
                 id <- id + 1
                 boxes <- boxes @ [ b ]
 
             if ch = '@' then
-                robot <- P2D(x, y)
+                robot <- Point(x, y)
 
             x <- x + 1
 
@@ -240,7 +200,7 @@ let solve () =
             let mutable x = 0
 
             while (x < nmap[0].Length) do
-                let p = P2D(x, y)
+                let p = Point(x, y)
 
                 if boundaries |> List.contains p then
                     printf "#"
@@ -259,38 +219,16 @@ let solve () =
 
             printfn $""
 
-    let pr () =
-        for y in (robot.Y) - 5 .. (robot.Y) + 5 do
-            let mutable x = robot.X - 10
-
-            while (x < robot.X + 10) do
-                let p = P2D(x, y)
-
-                if boundaries |> List.contains p then
-                    printf "#"
-                else if boxes |> List.contains p then
-                    x <- x + 1
-                    printf "[]"
-                else if robot = p then
-                    printf "@"
-                else
-                    printf "."
-
-                x <- x + 1
-
-            printfn $""
-
     printfn $"%A{robot}"
     printfn $"%A{boundaries.Length}"
     printfn $"%A{boxes.Length}"
 
     let dir =
         Map.empty
-            .Add('^', P2D(0, -1))
-            .Add('v', P2D(0, 1))
-            .Add('<', P2D(-1, 0))
-            .Add('>', P2D(1, 0))
-
+            .Add('^', Point(0, -1))
+            .Add('v', Point(0, 1))
+            .Add('<', Point(-1, 0))
+            .Add('>', Point(1, 0))
 
     let hitsBoundary p isR =
         (boundaries
@@ -301,101 +239,67 @@ let solve () =
                  (boundary = p || boundary = p.boxRightSide))
          |> Option.isSome)
 
-    let boxCollisionRobot (robot: P2D) (box: P2D) (d: P2D) = robot = box.boxRightSide || robot = box
+    let boxCollisionRobot (robot: Point) (box: Point) = robot = box.boxRightSide || robot = box
 
-    let boxCollisionBox (b1: P2D) (b2: P2D) (d: P2D) =
+    let boxCollisionBox (b1: Point) (b2: Point) =
         (b1 = b2 || (b1 = b2.boxRightSide || (b1.boxRightSide = b2)))
 
-
-    let getBoxAtPosition p isR d =
+    let tryGetBoxAtPos pos isRobot =
         boxes
-        |> List.where (fun b ->
-            if isR then
-                boxCollisionRobot p b d
+        |> List.where (fun box ->
+            if isRobot then
+                boxCollisionRobot pos box
             else
-                p.Id <> b.Id && boxCollisionBox p b d)
+                (pos.Id <> box.Id) && boxCollisionBox pos box)
 
-    let rec canMove p d isRobot =
-        if hitsBoundary p isRobot then
+    let rec canMove pos dir isRobot =
+        if hitsBoundary pos isRobot then
             false
         else
-            let bx = getBoxAtPosition p isRobot d
+            let boxes = tryGetBoxAtPos pos isRobot
 
-            if ((bx |> Seq.length) > 0) then
-                bx |> Seq.forall (fun nb -> (canMove (nb + d) d false))
+            if ((boxes |> Seq.length) > 0) then
+                boxes |> Seq.forall (fun box -> (canMove (box + dir) dir false))
             else
                 true
-
-
-    let mutable debug = false
 
     let mutable stepsLeft = moves.Length
     let mutable i = 0
 
-    prF ()
-
     for move in moves do
         let newRobotPos = robot + dir[move]
 
-
-        printfn $"%A{(i, stepsLeft, move)}"
-
         i <- + 1
 
-        (*
-        if stepsLeft <= 16291 + 1 then
-            prF ()
-            *)
-
         if canMove newRobotPos dir[move] true then
-            robot.add (dir[move])
+            robot.Add(dir[move])
 
-            let mutable sp =
+            let mutable boxesInFront =
                 boxes
                 |> List.where (fun box -> box = newRobotPos || box.boxRightSide = newRobotPos)
 
-            let mutable fail = false
 
+            while (boxesInFront.Length > 0) do
+                let previouslyMovedBoxes = boxesInFront
+                previouslyMovedBoxes |> Seq.iter (fun box -> box.Add dir[move])
 
-            while (sp.Length > 0) do
-                (*
-                if not (sp |> Seq.forall (fun x -> canMove x dir[move] true)) then
-                    prF ()
-                    fail <- true
-                    *)
-
-                let prev = sp
-                prev |> Seq.iter (fun x -> x.add dir[move])
-
-                sp <-
+                boxesInFront <-
                     boxes
                     |> List.where (fun b1 ->
-                        prev
-                        |> Seq.tryFind (fun b2 -> b1.Id <> b2.Id && (b1 = b2 || b1 = b2.boxRightSide || b1.boxRightSide = b2))
+                        previouslyMovedBoxes
+                        |> Seq.tryFind (fun b2 -> (b1.Id <> b2.Id) && (b1 = b2 || b1 = b2.boxRightSide || b1.boxRightSide = b2))
                         |> Option.isSome)
-
-        (*
-            if fail then
-                prF ()
-                failwith "wtf"
-                *)
-
-
-        if debug then
-            pr ()
-            Thread.Sleep(1)
-            ()
 
         stepsLeft <- stepsLeft - 1
 
     let mutable a1 = bigint.Zero
-    let mutable a2 = 0
+    let mutable a2 = bigint.Zero
 
     for b in boxes do
-        a1 <- a1 + ((b.Y |> bigint) * (bigint 100) + (b.X |> bigint))
+        a2 <- a2 + ((b.Y |> bigint) * (bigint 101) + (b.X |> bigint))
 
     prF ()
-    printfn $"%A{a1}"
+    printfn $"%A{a2}"
 
 
     //io.submitAnswer 1 a1

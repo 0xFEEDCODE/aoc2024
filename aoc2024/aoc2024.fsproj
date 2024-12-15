@@ -48,11 +48,10 @@
         <Content Include="day22.txt"/>
         <Content Include="day23.txt"/>
         <Content Include="day24.txt"/>
-        <Content Include="template.txt" />
+        <Content Include="template.txt"/>
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="FSPowerPack.Parallel.Seq.Community" Version="3.0.0"/>
         <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="9.0.0"/>
     </ItemGroup>
 
