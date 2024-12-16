@@ -82,8 +82,6 @@ let rec solve () =
             a1 <- a1 + ((f * 3L) + s)
             printfn $"%A{(f, s)}"
 
-
-
         ()
 
     printfn $"%A{a1}"
