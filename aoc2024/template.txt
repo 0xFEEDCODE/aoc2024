@@ -1,12 +1,14 @@
-﻿open aoc2024.util
+﻿module aoc2024.dayXY
+
+open aoc2024.util
 
 let solve () =
     let mutable a1 = bigint.Zero
     let mutable a2 = bigint.Zero
-    
+
     let io = aocIO
     let inp = io.getInput ()
-    
+
     //io.submitAnswer 1 a1
     //io.submitAnswer 2 a2
     0
