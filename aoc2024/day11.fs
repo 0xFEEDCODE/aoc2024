@@ -5,7 +5,7 @@ open System.Collections.Generic
 open aoc2024.util
 
 
-let getNDigits n = int ((log10 (double n)) + one)
+let getNDigits n = int ((log10 (double n)) + ONE)
 
 let split n (ndigits: int) =
     let x = Math.Pow(10, (float ndigits / 2.))
@@ -17,7 +17,7 @@ let splitl n (ndigits: int) =
 
 let isEven n =
     let nd = getNDigits n
-    nd % 2 = zero
+    nd % 2 = ZERO
 
 let solve () =
     let io = aocIO
@@ -48,9 +48,9 @@ let solve () =
 
                     if s.IsSome then
                         q.Enqueue(s.Value)
-                | n when n = zero ->
-                    nxt.Add(zero, (one, None))
-                    q.Enqueue(one)
+                | n when n = ZERO ->
+                    nxt.Add(ZERO, (ONE, None))
+                    q.Enqueue(ONE)
                 | n when isEven n ->
                     let nDigits = getNDigits n
                     let l, r = split n nDigits
@@ -86,7 +86,7 @@ let solve () =
                     if cached[f].ContainsKey(rl) then
                         cached[f][rl]
                     else
-                        let r = (loop f nsr sr one)
+                        let r = (loop f nsr sr ONE)
                         cached[f][rl] <- r
                         r
 
@@ -95,15 +95,15 @@ let solve () =
                         if cached[s.Value].ContainsKey(rl) then
                             cached[s.Value][rl]
                         else
-                            let r = (loop s.Value nsr sr one)
+                            let r = (loop s.Value nsr sr ONE)
                             cached[s.Value][rl] <- r
                             r
                     else
-                        zero
+                        ZERO
 
                 lv + rv
 
-        loop n targetR targetR zero
+        loop n targetR targetR ZERO
 
-    let res = stones |> Seq.fold (fun acc x -> acc + (nr x 75)) zero
+    let res = stones |> Seq.fold (fun acc x -> acc + (nr x 75)) ZERO
     printfn $"%A{res}"

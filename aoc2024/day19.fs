@@ -32,12 +32,12 @@ let solve () =
 
         loop "" target
 
-    let mutable a1 = zero
-    let mutable a2 = zero
+    let mutable a1 = ZERO
+    let mutable a2 = ZERO
 
     for d in designs do
         let res = canMake d
-        a1 <- a1 + (if res > zero then one else zero)
+        a1 <- a1 + (if res > ZERO then ONE else ZERO)
         a2 <- a2 + res
 
     printfn $"%A{a1}"

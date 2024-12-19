@@ -20,10 +20,10 @@ let ($) isTrue (a: Lazy<'a>, b: Lazy<'a>) = if isTrue then a.Force() else b.Forc
 let inline (+=) (x: byref<_>) y = x <- x + y
 let inline (-=) (x: byref<_>) y = x <- x - y
 
-let inline one<'a when 'a: (static member One: 'a)> : 'a =
+let inline ONE<'a when 'a: (static member One: 'a)> : 'a =
     LanguagePrimitives.GenericOne
 
-let inline zero<'a when 'a: (static member Zero: 'a)> : 'a =
+let inline ZERO<'a when 'a: (static member Zero: 'a)> : 'a =
     LanguagePrimitives.GenericZero
 
 module Seq =
