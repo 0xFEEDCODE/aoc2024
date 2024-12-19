@@ -17,7 +17,7 @@ let solve () =
 
         let rec loop (left: string) (right: string) =
             if right.Length = 0 then
-                1UL
+                LanguagePrimitives.GenericOne
             else
                 patterns
                 |> Seq.where right.StartsWith
@@ -32,16 +32,14 @@ let solve () =
 
         loop "" target
 
-
-    let mutable a1 = 0UL
-    let mutable a2 = 0UL
+    let mutable a1 = zero
+    let mutable a2 = zero
 
     for d in designs do
         let res = canMake d
-        a1 <- a1 + (if res > 0UL then 1UL else 0UL)
+        a1 <- a1 + (if res > zero then one else zero)
         a2 <- a2 + res
 
     printfn $"%A{a1}"
     printfn $"%A{a2}"
-
     0

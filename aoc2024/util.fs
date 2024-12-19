@@ -20,20 +20,11 @@ let ($) isTrue (a: Lazy<'a>, b: Lazy<'a>) = if isTrue then a.Force() else b.Forc
 let inline (+=) (x: byref<_>) y = x <- x + y
 let inline (-=) (x: byref<_>) y = x <- x - y
 
+let inline one<'a when 'a: (static member One: 'a)> : 'a =
+    LanguagePrimitives.GenericOne
 
-(*
-type m<'T> (v : 'T) =
-    let mutable value = v
-    member this.Value with get() = value and set(v) = value <- v
-    member this.v with get() = value
-    member this.s v = value <- v
-
-    // Setter
-    static member inline (><) (a: m<'T>, b: 'T) = a.Value <- b
-   
-    *)
-
-
+let inline zero<'a when 'a: (static member Zero: 'a)> : 'a =
+    LanguagePrimitives.GenericZero
 
 module Seq =
     let str = String "st"
@@ -505,6 +496,5 @@ let inline squad_ref_fst (quad: Quad<_, _, _, _> byref) = quad.Item1
 let inline squad_ref_snd (quad: Quad<_, _, _, _> byref) = quad.Item2
 let inline squad_ref_trd (quad: Quad<_, _, _, _> byref) = quad.Item3
 let inline squad_ref_fth (quad: Quad<_, _, _, _> byref) = quad.Item4
-
 
 let aocIO = aocIO 2024

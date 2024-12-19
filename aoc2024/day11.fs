@@ -5,25 +5,31 @@ open System.Collections.Generic
 open aoc2024.util
 
 
-let nDigits n = (int (log10 (n |> double)) + 1)
+let getNDigits n = int ((log10 (double n)) + one)
 
-let split n ndigits =
-    let x = Math.Pow(10, (ndigits / 2.)) |> uint64
-    (n / x, n % x)
+let split n (ndigits: int) =
+    let x = Math.Pow(10, (float ndigits / 2.))
+    (float n / x, float n % x)
 
-let splitl n ndigits =
-    let x = Math.Pow(10, (ndigits / 2.)) |> uint64
-    [ n / x; n % x ]
+let splitl n (ndigits: int) =
+    let x = Math.Pow(10, (float ndigits / 2.))
+    [ float n / x; n % x ]
 
 let isEven n =
-    let nd = nDigits n
-    nd % 2 = 0
+    let nd = getNDigits n
+    nd % 2 = zero
 
 let solve () =
     let io = aocIO
-
+    
     let mutable stones =
-        List(io.getInput () |> Seq.head |> String.extractAllNumsUint64 |> Seq.toList)
+        List(
+            io.getInput ()
+            |> Seq.head
+            |> String.extractAllNumsBig
+            |> Seq.map uint64
+            |> Seq.toList
+        )
 
     let nxt = Dictionary<uint64, uint64 * uint64 option>()
 
@@ -42,24 +48,24 @@ let solve () =
 
                     if s.IsSome then
                         q.Enqueue(s.Value)
-                | 0UL ->
-                    nxt.Add(0UL, (1UL, None))
-                    q.Enqueue(1UL)
+                | n when n = zero ->
+                    nxt.Add(zero, (one, None))
+                    q.Enqueue(one)
                 | n when isEven n ->
-                    let nd = nDigits n
-                    let l, r = split n nd
+                    let nDigits = getNDigits n
+                    let l, r = split n nDigits
+                    let l, r = uint64 l, uint64 r
                     nxt.Add(n, (l, Some(r)))
                     q.Enqueue(l)
                     q.Enqueue(r)
                 | n ->
-                    let nv = n * 2024UL
-                    nxt.Add(n, (nv, None))
-                    q.Enqueue(nv)
+                    let newValue = n * 2024UL
+                    nxt.Add(n, (newValue, None))
+                    q.Enqueue(newValue)
 
-    let m = Dictionary<uint64, Dictionary<int, uint64>>()
+    let cached = Dictionary<uint64, Dictionary<int, uint64>>()
 
     let nr n targetR =
-
         let rec loop n rl sr acc =
             if (rl = 0) then
                 acc
@@ -70,35 +76,34 @@ let solve () =
                 let f, s = nxt[n]
                 let nsr = (rl - 1)
 
-                if not (m.ContainsKey f) then
-                    m[f] <- Dictionary<int, uint64>()
+                if not (cached.ContainsKey f) then
+                    cached[f] <- Dictionary<int, uint64>()
 
-                if s.IsSome && not (m.ContainsKey s.Value) then
-                    m[s.Value] <- Dictionary<int, uint64>()
+                if s.IsSome && not (cached.ContainsKey s.Value) then
+                    cached[s.Value] <- Dictionary<int, uint64>()
 
                 let lv =
-                    if m[f].ContainsKey(rl) then
-                        m[f][rl]
+                    if cached[f].ContainsKey(rl) then
+                        cached[f][rl]
                     else
-                        let r = (loop f nsr sr 1UL)
-                        m[f][rl] <- r
+                        let r = (loop f nsr sr one)
+                        cached[f][rl] <- r
                         r
 
                 let rv =
                     if s.IsSome then
-                        if m[s.Value].ContainsKey(rl) then
-                            m[s.Value][rl]
+                        if cached[s.Value].ContainsKey(rl) then
+                            cached[s.Value][rl]
                         else
-                            let r = (loop s.Value nsr sr 1UL)
-                            m[s.Value][rl] <- r
+                            let r = (loop s.Value nsr sr one)
+                            cached[s.Value][rl] <- r
                             r
                     else
-                        0UL
+                        zero
 
                 lv + rv
 
+        loop n targetR targetR zero
 
-        loop n targetR targetR 0UL
-
-    let res = stones |> Seq.fold (fun acc x -> acc + (nr x 75)) 0UL
+    let res = stones |> Seq.fold (fun acc x -> acc + (nr x 75)) zero
     printfn $"%A{res}"
