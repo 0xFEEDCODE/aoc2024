@@ -1,4 +1,4 @@
-﻿module aoc2024.dayXY
+﻿module aoc2024.day19
 
 open aoc2024.util
 
