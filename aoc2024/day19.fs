@@ -10,8 +10,6 @@ let solve () =
     let patterns = (inp |> Seq.head).Split ',' |> Seq.map (_.Trim())
     let mutable designs = inp |> Seq.skip 2 |> Seq.toList
 
-    let mutable n = 0UL
-
     let cached = Dictionary<string, uint64>()
 
     let canMake (target: string) =
@@ -35,22 +33,15 @@ let solve () =
         loop "" target
 
 
-    (*
-        patterns
-        |> Seq.where (fun p -> p.Length <= d.Length && d.StartsWith p)
-        |> Seq.sumBy (fun _ -> nPossibleWays d 0)
-        *)
-
-    let mutable i = 0UL
+    let mutable a1 = 0UL
+    let mutable a2 = 0UL
 
     for d in designs do
-        let r = canMake d
-        n <- n + r
-        printfn $"%A{i}"
+        let res = canMake d
+        a1 <- a1 + (if res > 0UL then 1UL else 0UL)
+        a2 <- a2 + res
 
-
-        i <- i + 1UL
-
-    printfn $"%A{n}"
+    printfn $"%A{a1}"
+    printfn $"%A{a2}"
 
     0
