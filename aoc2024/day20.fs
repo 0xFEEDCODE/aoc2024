@@ -46,20 +46,18 @@ let solve () =
 
         printfn ""
 
-    let sp = start
-
     let findCheats (start: Point2D) (cheatTime: int) (shortestAllowedTime: int) (initialDist: int) =
         let q = Queue()
-        q.Enqueue((start, 0, cheatTime))
+        q.Enqueue((start, ZERO, cheatTime))
 
         let mutable reached = Dictionary<Point2D * int, bool>()
-        reached[(start, 0)] <- true
+        reached[(start, ZERO)] <- true
 
         while (q.Count > 0) do
             let cp, time, cheatTimeLeft = q.Dequeue()
 
             if (cheatTimeLeft > 0 && time < shortestAllowedTime) then
-                let newTime = time + 1
+                let newTime = time + ONE
 
                 neighbourOffsets
                 |> List.iter (fun offs ->
@@ -72,22 +70,18 @@ let solve () =
                         then
                             (cheats[start.y][start.x]).Add((newTime, np))
 
-                            if (np = start) then
-                                ()
-
                         if not (reached.ContainsKey((np, newTime))) then
-                            q.Enqueue((np, newTime, cheatTimeLeft - 1))
+                            q.Enqueue((np, newTime, cheatTimeLeft - ONE))
                             reached[(np, newTime)] <- true)
 
         cheats[start.y][start.x]
-
 
     let findShortestPath (start: Point2D) (target: Point2D) =
         let mutable visited = Dictionary<Point2D, int>()
 
         let mutable q = PriorityQueue()
 
-        q.Enqueue((start, 0), 0)
+        q.Enqueue((start, ZERO), 0)
 
         while (q.Count > 0) do
             let mutable cp, time = q.Dequeue()
@@ -99,7 +93,7 @@ let solve () =
             else if (not (visited.ContainsKey(cp)) || (time < visited[cp])) then
                 visited[cp] <- time
 
-                let newTime = time + 1
+                let newTime = time + ONE
 
                 neighbourOffsets
                 |> List.iter (fun offs ->
@@ -110,14 +104,14 @@ let solve () =
 
         distToEnd[start.y][start.x]
 
-    let fp (start: Point2D) (target: Point2D) (shortestAllowedTime: int) =
-        let mutable lastId = 0UL
+    let findPaths (start: Point2D) (target: Point2D) (shortestAllowedTime: int) =
+        let mutable lastId = ZERO
         let mutable results = List()
         let mutable reached = Dictionary<Point2D, int>()
 
         let mutable st = Stack()
 
-        st.Push((start, 0, 0UL))
+        st.Push((start, ONE, 0UL))
 
         while (st.Count > 0) do
             let cp, time, id = st.Pop()
@@ -134,7 +128,7 @@ let solve () =
                     let timeToReach = time + cheatTime + distToEnd[cheatEnd.y][cheatEnd.x]
 
                     if (timeToReach <= shortestAllowedTime && not (cons.ContainsKey(cp, cheatEnd))) then
-                        cons[(cp, cheatEnd)] <- 0
+                        cons[(cp, cheatEnd)] <- ZERO
 
                         let id =
                             lastId <- lastId + ONE
@@ -148,7 +142,7 @@ let solve () =
 
                     if (np.y >= 0 && np.y <= rows && np.x >= 0 && np.x <= cols) then
                         if gr[np.y][np.x] <> '#' then
-                            st.Push((np, time + 1, id)))
+                            st.Push((np, time + ONE, id)))
 
         results
 
@@ -168,15 +162,15 @@ let solve () =
             let p = Point2D(x, y)
 
             if gr[y][x] <> '#' then
-                let initdist = distToEnd[start.y][start.x] - distToEnd[y][x]
-                findCheats p ctime shortestPathWithoutCheats initdist |> ignore
+                let initDist = distToEnd[start.y][start.x] - distToEnd[y][x]
+                findCheats p ctime shortestPathWithoutCheats initDist |> ignore
 
     printfn $"%A{shortestPathWithoutCheats}"
 
     let nx = 100
 
     let allPathsWithCheats =
-        fp start target (shortestPathWithoutCheats - nx)
+        findPaths start target (shortestPathWithoutCheats - nx)
         |> Seq.toList
         |> List.map ((-) shortestPathWithoutCheats)
         |> List.groupBy id
@@ -190,7 +184,7 @@ let solve () =
 
         if (savesSeconds >= nx) then
             printfn $"%A{(savesSeconds, cheatsN)}"
-            a <- a + 1
+            a <- a + ONE
             a2 <- a2 + cheatsN
 
     printfn $"%A{a}"
