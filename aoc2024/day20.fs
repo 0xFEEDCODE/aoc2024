@@ -18,7 +18,7 @@ let solve () =
 
     let mutable cheats =
         gr
-        |> Seq.map (fun x -> x |> Seq.map (fun _ -> List()) |> Seq.toArray)
+        |> Seq.map (fun x -> x |> Seq.map (fun _ -> List<int * Point2D>()) |> Seq.toArray)
         |> Seq.toArray
 
     let mutable start = Point2D()
@@ -46,35 +46,44 @@ let solve () =
 
         printfn ""
 
-    let findCheats (start: Point2D) (cheatTime: int) (shortestAllowedTime: int) (initialDist: int) =
-        let q = Queue()
-        q.Enqueue((start, ZERO, cheatTime))
+    let isPointWithinBoundaries (p: Point2D) =
+        (p.y >= 0 && p.y <= rows && p.x >= 0 && p.x <= cols)
 
-        let mutable reached = Dictionary<Point2D * int, bool>()
-        reached[(start, ZERO)] <- true
+    let mapCheats start (cheatTime: int) (shortestAllowedTime: int) (initialDist: int) =
+        let reached = HashSet()
+        reached.Add((start, ZERO)) |> ignore
 
-        while (q.Count > 0) do
-            let cp, time, cheatTimeLeft = q.Dequeue()
+        //cp - Current Point
+        //np - Next Point
+        //nt - Next Time
+        //ctl - Cheat time left
+        
+        [ (start, ZERO, cheatTime) ]
+        |> List.unfold (fun items ->
+            let newItems =
+                items
+                |> List.where (fun (_, time, ctl) -> (ctl > 0 && time < shortestAllowedTime))
+                |> List.map (fun (cp, time, ctl) ->
+                    let nt = time + ONE
 
-            if (cheatTimeLeft > 0 && time < shortestAllowedTime) then
-                let newTime = time + ONE
-
-                neighbourOffsets
-                |> List.iter (fun offs ->
-                    let np = (offs + cp)
-
-                    if (np.y >= 0 && np.y <= rows && np.x >= 0 && np.x <= cols) then
+                    neighbourOffsets
+                    |> List.map ((+) cp)
+                    |> List.where (fun np -> isPointWithinBoundaries np && not (reached.Contains((np, nt))))
+                    |> List.map (fun np ->
                         if
                             gr[np.y][np.x] <> '#'
                             && (initialDist + cheatTime + distToEnd[np.y][np.x] <= shortestAllowedTime)
                         then
-                            (cheats[start.y][start.x]).Add((newTime, np))
+                            // figure out why - 1 !!!
+                            (cheats[start.y][start.x]).Add((nt - 1, np))
 
-                        if not (reached.ContainsKey((np, newTime))) then
-                            q.Enqueue((np, newTime, cheatTimeLeft - ONE))
-                            reached[(np, newTime)] <- true)
+                        reached.Add((np, nt)) |> ignore
+                        Some(np, nt, ctl - ONE)))
+                |> List.collect id
+                |> List.map _.Value
 
-        cheats[start.y][start.x]
+            if newItems.IsEmpty then None else Some(None, newItems))
+        |> List.iter (fun _ -> ())
 
     let findShortestPath (start: Point2D) (target: Point2D) =
         let mutable visited = Dictionary<Point2D, int>()
@@ -99,7 +108,7 @@ let solve () =
                 |> List.iter (fun offs ->
                     let np = (offs + cp)
 
-                    if (np.y >= 0 && np.y <= rows && np.x >= 0 && np.x <= cols && gr[np.y][np.x] <> '#') then
+                    if (isPointWithinBoundaries np && gr[np.y][np.x] <> '#') then
                         q.Enqueue((np, newTime), newTime + np.GetManhattanDistance(target)))
 
         distToEnd[start.y][start.x]
@@ -163,7 +172,7 @@ let solve () =
 
             if gr[y][x] <> '#' then
                 let initDist = distToEnd[start.y][start.x] - distToEnd[y][x]
-                findCheats p ctime shortestPathWithoutCheats initDist |> ignore
+                mapCheats p ctime shortestPathWithoutCheats initDist
 
     printfn $"%A{shortestPathWithoutCheats}"
 

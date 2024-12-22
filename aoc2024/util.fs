@@ -434,6 +434,21 @@ module Math =
     let inline lcm a b = (a * b) / (gcd a b)
 
 
+module Point2D =
+    let getAdjacentNeighbours (point: Point2D) =
+        [ (-1, 0); (1, 0); (0, -1); (0, 1) ]
+        |> Seq.map (fun (x, y) -> Point2D(point.x + x, point.y + y))
+        |> Seq.toArray
+
+    let getDiagonalNeighbours (point: Point2D) =
+        [ (1, 1); (-1, 1); (1, -1); (-1, -1) ]
+        |> Seq.map (fun (x, y) -> Point2D(point.x + x, point.y + y))
+        |> Seq.toArray
+
+    let getAllNeighbours (point: Point2D) =
+        [ (-1, 0); (1, 0); (0, -1); (0, 1); (1, 1); (-1, 1); (1, -1); (-1, -1) ]
+        |> Seq.map (fun (x, y) -> Point2D(point.x + x, point.y + y))
+        |> Seq.toArray
 
 type Pair<'a, 'b> =
     struct

@@ -4,7 +4,6 @@ open System
 open System.Collections.Generic
 open aoc2024.util
 
-
 let getNDigits n = int ((log10 (double n)) + ONE)
 
 let split n (ndigits: int) =
