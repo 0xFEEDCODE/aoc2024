@@ -1,4 +1,4 @@
-﻿module aoc2024.day21
+﻿module aoc2024.dayxy
 
 open System
 open System.Collections.Generic
@@ -124,7 +124,7 @@ let solve () =
                 if (shortestPathFound.IsNone || cpath.Length < shortestPathFound.Value) then
                     shortestPathFound <- Some(cpath.Length)
 
-                paths.Add(fpath)
+                paths.Add(cpath)
             else if (shortestPathFound.IsNone || cpath.Length <= shortestPathFound.Value) then
                 let target = seq[0] |> string
 
@@ -141,7 +141,7 @@ let solve () =
                 paths
                 |> Seq.iter (fun p ->
                     let newPath = cpath + p + "A"
-                    q.Enqueue((targetPos, newPath, fpath @ [ p + "A" ], seq[1..])))
+                    q.Enqueue((targetPos, newPath, fpath @ [ newPath ], seq[1..])))
 
         paths
 
@@ -203,7 +203,12 @@ let solve () =
                     let (ld, lp, path) = (shortestPathToPressButton ch p None DPAD)
                     (ld, lp, path + "A")
 
-    (*
+    for code in codes do
+        let spaths = getPathsForSeq code NPAD
+
+        printfn $"%A{spaths}"
+        exit (0)
+
         let mutable _, dpadSeq =
             code
             |> Seq.fold
@@ -212,83 +217,78 @@ let solve () =
                     let (_, __, path) = mappedNpad[cp, button.ToString()]
                     (npadButtonPositions[button], pathAcc @ [ [ path + "A" ] ]))
                 (npadSp, [])
-    *)
 
-    let processDs ds =
-        ds
-        |> Seq.fold
-            (fun (plane1CP, pathAcc) paths ->
-                let lastPath = paths |> Seq.last
-                let mutable i = 0
-                let mutable stop = false
-                let mutable plane1CP = plane1CP
+        printfn $"%A{dpadSeq}"
+        let n = 2
 
-                let plane1CPSp = plane1CP
+        for i in 0 .. n - 1 do
+            printfn $"%A{(i, mappedDPAD.Count)}"
 
-                let mutable processedTotalLen = 0
-                let mutable translations = []
-                let mutable translatedPath = StringBuilder()
-                let mutable processedPath = StringBuilder()
+            dpadSeq <-
+                dpadSeq
+                |> Seq.fold
+                    (fun (plane1CP, pathAcc) paths ->
+                        let lastPath = paths |> Seq.last
+                        let mutable i = 0
+                        let mutable stop = false
+                        let mutable plane1CP = plane1CP
 
-                let mutable toTranslate = lastPath
+                        let plane1CPSp = plane1CP
 
-                while not stop do
-                    i <- 0
+                        let mutable processedTotalLen = 0
+                        let mutable translations = []
+                        let mutable translatedPath = StringBuilder()
+                        let mutable processedPath = StringBuilder()
 
-                    while not stop && not (mappedDPAD.ContainsKey(plane1CP, toTranslate)) do
-                        toTranslate <- toTranslate.Substring(0, lastPath.Length - i - processedTotalLen)
-                        i <- i + 1
+                        let mutable toTranslate = lastPath
 
-                        if ((lastPath.Length - i - processedTotalLen) < 0) then
-                            stop <- true
+                        while not stop do
+                            i <- 0
 
-                    if not stop then
-                        let plane2LastDir, plane2CP, translated = mappedDPAD[plane1CP, toTranslate]
-                        translatedPath.Append(translated) |> ignore
-                        processedPath.Append(toTranslate) |> ignore
+                            while not stop && not (mappedDPAD.ContainsKey(plane1CP, toTranslate)) do
+                                toTranslate <- toTranslate.Substring(0, lastPath.Length - i - processedTotalLen)
+                                i <- i + 1
 
-                        translations <- translations @ [ (plane2LastDir, plane2CP, translated) ]
-                        processedTotalLen <- processedTotalLen + toTranslate.Length
+                                if ((lastPath.Length - i - processedTotalLen) < 0) then
+                                    stop <- true
 
-                        mappedDPAD[(plane1CP, toTranslate)] <- (plane2LastDir, plane2CP, translated)
-                        mappedDPAD[(plane1CPSp, processedPath.ToString())] <- (plane2LastDir, plane2CP, translatedPath.ToString())
+                            if not stop then
+                                let plane2LastDir, plane2CP, translated = mappedDPAD[plane1CP, toTranslate]
+                                translatedPath.Append(translated) |> ignore
+                                processedPath.Append(toTranslate) |> ignore
 
-                        plane1CP <- dpadButtonPositions[toTranslate |> Seq.last |> string]
-                        toTranslate <- lastPath[processedTotalLen..]
+                                translations <- translations @ [ (plane2LastDir, plane2CP, translated) ]
+                                processedTotalLen <- processedTotalLen + toTranslate.Length
 
-                    if toTranslate.Length = 0 then
-                        stop <- true
+                                mappedDPAD[(plane1CP, toTranslate)] <- (plane2LastDir, plane2CP, translated)
+                                mappedDPAD[(plane1CPSp, processedPath.ToString())] <- (plane2LastDir, plane2CP, translatedPath.ToString())
 
-                if (processedTotalLen <> lastPath.Length) then
-                    failwith "f"
+                                plane1CP <- dpadButtonPositions[toTranslate |> Seq.last |> string]
+                                toTranslate <- lastPath[processedTotalLen..]
 
-                let mutable newPath = translatedPath.ToString()
+                            if toTranslate.Length = 0 then
+                                stop <- true
 
-                (dpadButtonPositions[newPath |> Seq.last |> string], pathAcc @ [ [ newPath ] ]))
-            (dpadSp, [])
+                        if (processedTotalLen <> lastPath.Length) then
+                            failwith "f"
 
-    for code in codes do
-        let minLen =
-            let mutable dpadSeq = getPathsForSeq code NPAD |> Seq.map id
+                        let mutable newPath = translatedPath.ToString()
 
-            printfn $"%A{dpadSeq}"
-            let n = 1
+                        (dpadButtonPositions[newPath |> Seq.last |> string], pathAcc @ [ [ newPath ] ]))
+                    (dpadSp, [])
+                |> snd
 
-            let mutable shortestLenFound = Int32.MaxValue
+        //v<<A>>^A<A>AvA<^AA>A<vAAA>^A
+        //v<<A>^>A<A>AvA^A<vA^>A
 
-            for ds in dpadSeq do
-                let mutable ds = [ ds ]
+        //printfn $"%A{dpadSeq}"
 
-                for i in 0 .. n - 1 do
-                    printfn $"%A{(i, mappedDPAD.Count)}"
-                    ds <- processDs ds |> snd
+        let r =
+            dpadSeq
+            |> Seq.map (fun x -> x |> Seq.last)
+            |> Seq.fold (fun acc x -> acc + x) ""
 
-                let r = ds |> Seq.map (fun x -> x |> Seq.last) |> Seq.fold (fun acc x -> acc + x) ""
-
-                printfn $"%A{(r, r.Length)}"
-                shortestLenFound <- min shortestLenFound r.Length
-
-            shortestLenFound
+        printfn $"%A{(r.Length)}"
 
         let codeN =
             code
@@ -297,12 +297,8 @@ let solve () =
             |> String.concat ""
             |> Int32.Parse
 
-        a1 <- a1 + bigint (codeN * minLen)
-        printfn $"%A{minLen}"
-
-
-    //printfn $"%A{minLen}"
-
+        ()
+        a1 <- a1 + bigint (codeN * r.Length)
 
     printfn $"%A{a1}"
     ()

@@ -25,8 +25,10 @@ day18.solve ()
 day19.solve ()
 day20.solve ()
 day21.solve ()
-*)
 day22.solve ()
+*)
+//day21.solve ()
+day23.solve ()
 
 sw.Stop()
 printfn $"Time taken - %A{sw.Elapsed}"

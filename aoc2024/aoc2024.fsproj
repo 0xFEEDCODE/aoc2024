@@ -29,9 +29,13 @@
         <Compile Include="day19.fs"/>
         <Compile Include="day20.fs"/>
         <Compile Include="day21.fs"/>
+        <Compile Include="day21Fork5.fs"/>
+        <Compile Include="day21Fork4.fs"/>
+        <Compile Include="day21Fork3.fs"/>
         <Compile Include="day21Fork2.fs"/>
         <Compile Include="day21fork.fs"/>
         <Compile Include="day22.fs"/>
+        <Compile Include="day23.fs"/>
         <Compile Include="Program.fs"/>
         <Content Include="day01.txt"/>
         <Content Include="day02.txt"/>
