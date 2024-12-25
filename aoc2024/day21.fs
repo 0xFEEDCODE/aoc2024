@@ -226,7 +226,7 @@ let solve () =
                     let score (x: string) =
                         let mutable p = x
 
-                        for i in 0..2 do
+                        for i in 0..1 do
                             p <- getPathsForSeqSp p DPAD pos |> Seq.head |> Seq.fold (fun a x -> a + x) ""
 
                         p.Length * -1
