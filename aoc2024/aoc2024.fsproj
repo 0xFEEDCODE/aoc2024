@@ -29,6 +29,9 @@
         <Compile Include="day19.fs"/>
         <Compile Include="day20.fs"/>
         <Compile Include="day21.fs"/>
+        <Compile Include="day21Fork8.fs"/>
+        <Compile Include="day21Fork7.fs"/>
+        <Compile Include="day21Fork6.fs"/>
         <Compile Include="day21Fork5.fs"/>
         <Compile Include="day21Fork4.fs"/>
         <Compile Include="day21Fork3.fs"/>
@@ -36,6 +39,8 @@
         <Compile Include="day21fork.fs"/>
         <Compile Include="day22.fs"/>
         <Compile Include="day23.fs"/>
+        <Compile Include="day24.fs"/>
+        <Compile Include="day25.fs"/>
         <Compile Include="Program.fs"/>
         <Content Include="day01.txt"/>
         <Content Include="day02.txt"/>
@@ -58,9 +63,11 @@
         <Content Include="day19.txt"/>
         <Content Include="day20.txt"/>
         <Content Include="day21.txt"/>
+        <Content Include="day21Xyze.txt"/>
         <Content Include="day22.txt"/>
         <Content Include="day23.txt"/>
         <Content Include="day24.txt"/>
+        <Content Include="day25.txt"/>
         <Content Include="template.txt"/>
         <Content Include="junk.txt"/>
     </ItemGroup>

@@ -123,19 +123,6 @@ let solve () =
 
         score
 
-    let getBestScorePath (paths: string seq) =
-        let mutable bestPath = ""
-        let mutable bestScore = Int32.MinValue
-
-        for p in paths do
-            let score = getPathScoreOriginal p
-
-            if score > bestScore then
-                bestPath <- p
-                bestScore <- score
-
-        bestPath
-
     let c = Dictionary<string * Point2D, string list>()
 
     let shortestPathsToPressButton (button: string) startPos boundX boundY fn (pad: pad) =
